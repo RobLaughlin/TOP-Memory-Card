@@ -1,24 +1,10 @@
-import { z } from "zod";
 import qs from "qs";
+import {
+    POKEMON_CARD_SCHEMA,
+    POKEMON_RESPONSE_SCHEMA,
+} from "./PokeAPI.schema.js";
 
 const BASE_URL = "https://api.pokemontcg.io/v2/cards";
-
-const POKEMON_CARD_SCHEMA = z.object({
-    id: z.string(),
-    name: z.string(),
-    images: z.object({
-        large: z.string(),
-    }),
-    rarity: z.string(),
-});
-
-const POKEMON_RESPONSE_SCHEMA = z.object({
-    data: POKEMON_CARD_SCHEMA.optional().array().nonempty(),
-    pageSize: z.number(),
-    page: z.number(),
-    count: z.number(),
-    totalCount: z.number(),
-});
 
 async function fetchPokemon(numRefetches = 3) {
     /**
