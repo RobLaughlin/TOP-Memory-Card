@@ -2,11 +2,15 @@ import qs from "qs";
 import {
     POKEMON_CARD_SCHEMA,
     POKEMON_RESPONSE_SCHEMA,
+    PokemonCard,
 } from "./PokeAPI.schema.js";
 
 const BASE_URL = "https://api.pokemontcg.io/v2/cards";
 
-async function fetchPokemon(numRefetches = 3) {
+export async function fetchPokemon(
+    numRefetches = 3,
+    cacheType = "force-cache"
+) {
     /**
      * Returns a dictionary of the original 151 pokemon mapping to their corresponding id's.
      * Pokemon cards follow the POKEMON_CARD_SCHEMA zod object, and ar epulled from the base series set.
@@ -25,7 +29,7 @@ async function fetchPokemon(numRefetches = 3) {
         return `${BASE_URL}?${queryStr}`;
     };
 
-    const getResponse = async (url, refetches, cache = "force-cache") => {
+    const getResponse = async (url, refetches, cache) => {
         if (refetches <= 0) {
             return [null, new Error(`Failed to pull data from API: ${query}`)];
         }
@@ -42,7 +46,7 @@ async function fetchPokemon(numRefetches = 3) {
     const pokemon = new Map();
     await Promise.all(
         queries.map(async (q) => {
-            const [res, err] = await getResponse(q, numRefetches);
+            const [res, err] = await getResponse(q, numRefetches, cacheType);
             const { success, data } = POKEMON_RESPONSE_SCHEMA.safeParse(res);
             if (err !== null || !success) {
                 throw err;
@@ -50,8 +54,9 @@ async function fetchPokemon(numRefetches = 3) {
 
             data.data.forEach((card) => {
                 const { id, name, rarity } = card;
+                const number = parseInt(card.number);
                 const img = card.images.large;
-                pokemon.set(id, { id, name, rarity, img });
+                pokemon.set(id, new PokemonCard(id, name, img, rarity, number));
             });
         })
     ).catch((err) => {
@@ -60,5 +65,3 @@ async function fetchPokemon(numRefetches = 3) {
 
     return pokemon;
 }
-
-fetchPokemon();
