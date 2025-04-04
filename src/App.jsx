@@ -27,7 +27,7 @@ function App() {
         };
 
         // Call from pokemon API to fetch pokemon cards
-        fetchPokemon(3, "no-cache")
+        fetchPokemon(3, "force-cache")
             .then((pokemon) => {
                 const shuffledDeck = shuffle(Array.from(pokemon.values()));
                 setPokeResponse({
@@ -65,11 +65,7 @@ function App() {
                     </p>
                 </div>
             ) : pokeResponse.error === null ? (
-                <PokeGame
-                    cards={pokeResponse.cards}
-                    width={windowSize.width}
-                    height={windowSize.height}
-                />
+                <PokeGame cards={pokeResponse.cards} />
             ) : (
                 <div className="loadingContainer">
                     <p className="loadingText failed">
@@ -77,17 +73,6 @@ function App() {
                     </p>
                 </div>
             )}
-
-            {/* {pokeResponse.cards.map((card) => {
-                return (
-                    <img
-                        id={card.id}
-                        key={card.id}
-                        src={card.img}
-                        alt={`${card.name} pokemon`}
-                    />
-                );
-            })} */}
         </div>
     );
 }

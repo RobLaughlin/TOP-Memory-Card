@@ -34,3 +34,19 @@
 .pokeGame .card:hover {
     box-shadow: 0px 0px 8px 8px white;
 }
+
+@media screen and (max-width: 800px) {
+    .pokeGame header {
+        flex-wrap: wrap;
+    }
+
+    .pokeGame .titleContainer,
+    .pokeGame .scoreContainer {
+        width: 100%;
+    }
+
+    .pokeGame .scoreContainer {
+        padding-left: 16px;
+        margin-top: 32px;
+    }
+}
