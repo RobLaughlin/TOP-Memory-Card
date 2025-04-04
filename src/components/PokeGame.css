@@ -1,5 +1,6 @@
 .pokeGame {
     width: 100%;
+    overflow-x: hidden;
 }
 
 .pokeGame header {
