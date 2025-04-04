@@ -1,5 +1,5 @@
 import "./PokeGame.css";
-import { React, useEffect, useState } from "react";
+import { cache, React, useEffect, useState } from "react";
 
 const CARDS_TO_DRAW = 10;
 
@@ -19,6 +19,31 @@ function PokeGame({ cards }) {
 
     const [deckTop, setDeckTop] = useState(cards.length === 0 ? null : 0);
     const [viewedCards, setViewedCards] = useState([]);
+    const [cachedCards, setCachedCards] = useState([]);
+
+    // Always use the first n cards from the decktop
+    useEffect(() => {
+        if (deckTop === null) {
+            return;
+        }
+
+        // Check if we got any cards in the cache/memo
+        if (cachedCards.length === 0) {
+            setViewedCards(Array.from(drawCards(deckTop, CARDS_TO_DRAW)));
+        } else {
+            setViewedCards([...cachedCards]);
+        }
+
+        // Update the cache
+        setCachedCards(
+            Array.from(
+                drawCards(
+                    (deckTop + CARDS_TO_DRAW) % cards.length,
+                    CARDS_TO_DRAW
+                )
+            )
+        );
+    }, [deckTop]);
 
     function cardClicked(cardKey) {
         const { currentScore, bestScore, clickedCards } = gameState;
@@ -46,9 +71,8 @@ function PokeGame({ cards }) {
                 bestScore: Math.max(bestScore, currentScore + 1),
                 clickedCards,
             });
-
             shuffleArray(viewedCards);
-            setViewedCards(viewedCards);
+            setViewedCards([...viewedCards]);
         }
     }
 
@@ -67,15 +91,23 @@ function PokeGame({ cards }) {
         return newPlayedCards;
     }
 
-    useEffect(() => {
-        // Always use the first n cards from the decktop
-        if (deckTop === null) {
-            setViewedCards([]);
-            return;
-        }
-
-        setViewedCards(drawCards(deckTop, CARDS_TO_DRAW));
-    }, [deckTop]);
+    function renderCard(card, hidden) {
+        return (
+            <img
+                src={card.img}
+                alt={`${card.name} Pokemon card`}
+                id={card.id}
+                key={card.id}
+                className="card"
+                onClick={() => {
+                    cardClicked(card.id);
+                }}
+                style={{
+                    display: hidden ? "none" : "block",
+                }}
+            />
+        );
+    }
 
     return (
         <div className="pokeGame">
@@ -97,20 +129,8 @@ function PokeGame({ cards }) {
             </header>
             <main>
                 <div className="cardContainer">
-                    {viewedCards.map((card) => {
-                        return (
-                            <img
-                                src={card.img}
-                                alt={`${card.name} Pokemon card`}
-                                id={card.id}
-                                key={card.id}
-                                className="card"
-                                onClick={() => {
-                                    cardClicked(card.id);
-                                }}
-                            />
-                        );
-                    })}
+                    {viewedCards.map((card) => renderCard(card, false))}
+                    {cachedCards.map((card) => renderCard(card, true))}
                 </div>
             </main>
         </div>
